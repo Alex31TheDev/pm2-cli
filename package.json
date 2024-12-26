@@ -1,0 +1,8 @@
+{
+    "name": "pm-cli",
+    "main": "start.js",
+    "private": true,
+    "dependencies": {
+        "pm2": "^5.4.3"
+    }
+}
