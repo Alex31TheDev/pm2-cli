@@ -72,7 +72,9 @@ async function disconnect() {
         process.exit(1);
     }
 
+    global_rl.close();
     console.log(goodbye);
+
     process.exit(0);
 }
 

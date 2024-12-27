@@ -32,7 +32,6 @@ async function handler(line) {
                 }
             }
 
-            next();
             break;
 
         case "stop":
@@ -47,7 +46,6 @@ async function handler(line) {
                 }
             }
 
-            next();
             break;
 
         case "restart":
@@ -62,7 +60,6 @@ async function handler(line) {
                 }
             }
 
-            next();
             break;
 
         case "delete":
@@ -77,7 +74,6 @@ async function handler(line) {
                 }
             }
 
-            next();
             break;
 
         case "list":
@@ -99,12 +95,11 @@ async function handler(line) {
                 console.table(procTable);
             }
 
-            next();
             break;
 
         case "logs":
-            if (!(await streamLogs(name))) {
-                next();
+            if (await streamLogs(name)) {
+                return;
             }
 
             break;
@@ -112,22 +107,19 @@ async function handler(line) {
         case "exit":
             if (name !== "logs") {
                 await disconnect();
-
-                break;
+                return;
             }
 
         case "exitlogs":
             await stopStreaming();
-
-            next();
             break;
 
         default:
             console.log("Unknown command.", help);
-
-            next();
             break;
     }
+
+    next();
 }
 
 let logStream = null;
