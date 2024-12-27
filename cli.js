@@ -4,10 +4,13 @@ const readline = require("readline");
 
 const { pm2ConnectAsync, pm2DisconnectAsync } = require("./pm2async.js");
 
+const config = require("./ecosystem.config.js");
+
 const intro = 'PM2 Interactive Shell. Enter commands (e.g., start, stop, restart, delete). Type "exit" to quit.',
     goodbye = "Disconnected from PM2. Goodbye!";
 
-const help = "Available commands: start <script/name>, stop <name>, restart <name>, delete <name>, list, exit";
+const help =
+    "Available commands: start <script/name>, stop <name>, restart <name>, delete <name>, logs <name>, exitlogs, list, exit";
 
 const prompt = "PM2>";
 
@@ -16,9 +19,9 @@ function startCli(handler) {
     const rl = createInterface();
 
     console.log(intro);
-    rl.prompt();
 
     global_rl = rl;
+    next();
 }
 
 function createInterface() {
@@ -34,9 +37,22 @@ function createInterface() {
     return rl;
 }
 
+let connected;
+
 async function connect() {
+    if (connected) {
+        return;
+    }
+
+    const args = [];
+
+    if (config.daemon === false) {
+        args.push(true);
+    }
+
     try {
-        await pm2ConnectAsync();
+        await pm2ConnectAsync(...args);
+        connected = true;
     } catch (err) {
         console.error("Error connecting to PM2:", err);
         process.exit(1);
@@ -44,7 +60,17 @@ async function connect() {
 }
 
 async function disconnect() {
-    await pm2DisconnectAsync();
+    if (!connected) {
+        return;
+    }
+
+    try {
+        await pm2DisconnectAsync();
+        connected = false;
+    } catch (err) {
+        console.error("Error disconnecting from PM2:", err);
+        process.exit(1);
+    }
 
     console.log(goodbye);
     process.exit(0);
@@ -57,6 +83,7 @@ function next() {
 }
 
 module.exports = {
+    connected,
     connect,
     disconnect,
 

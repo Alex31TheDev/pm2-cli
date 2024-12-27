@@ -24,7 +24,9 @@ async function startApps() {
         }
     }
 
-    console.log(`Started ${numStarted} apps.`);
+    const s = numStarted > 1 ? "s" : "";
+    console.log(`Started ${numStarted} app${s}.`);
+
     return numStarted;
 }
 

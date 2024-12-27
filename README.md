@@ -15,4 +15,6 @@ Available commands:
 -   restart \<name\>
 -   delete \<name\>
 -   list
+-   logs \<name\>
+-   exitlogs
 -   exit
