@@ -4,12 +4,14 @@ module.exports = {
         {
             name: "app1",
             script: "index.js",
-            cwd: "~/app1"
+            cwd: "~/app1",
+            log_file: "/dev/null"
         },
         {
             name: "app2",
             script: "index.js",
-            cwd: "~/app2"
+            cwd: "~/app2",
+            log_file: "/dev/null"
         }
     ]
 };
