@@ -1,7 +1,5 @@
 "use strict";
 
-const pm2 = require("pm2");
-
 const {
     pm2StartAsync,
     pm2StopAsync,
@@ -11,7 +9,8 @@ const {
     pm2LaunchBusAsync,
     pm2DisconnectBusAsync
 } = require("./pm2async.js");
-const { help, next, disconnect } = require("./cli.js");
+
+const { disconnect, help, next } = require("./cli.js");
 
 async function handler(line) {
     const [cmd, ...args] = line.trim().split(" ");

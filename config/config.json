@@ -1,0 +1,5 @@
+{
+    "daemon": false,
+    "websocketServer": false,
+    "websocketPort": 8080
+}

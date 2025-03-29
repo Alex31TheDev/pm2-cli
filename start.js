@@ -1,16 +1,30 @@
 "use strict";
 
 process.env.PM2_LOG_DATE_FORMAT = "";
-const startApps = require("./apps.js");
 
-const { connect, startCli } = require("./cli.js");
-const { handler, streamLogs } = require("./handler.js");
+const loadConfig = require("./src/config.js");
+const ecosystem = require("./config/ecosystem.config.js");
+
+const startApps = require("./src/apps.js");
+
+const { connect, startCli } = require("./src/cli.js");
+const { handler: cliHandler, streamLogs } = require("./src/cliHandler.js");
+
+const { startServer } = require("./src/server.js");
+const { handler: wsHander } = require("./src/wsHandler.js");
 
 async function main() {
-    await connect();
-    await startApps();
+    const config = loadConfig();
 
-    startCli(handler);
+    await connect(config);
+    await startApps(ecosystem);
+
+    startCli(cliHandler);
+
+    if (config.websocketServer) {
+        startServer(config, wsHander);
+    }
+
     await streamLogs();
 }
 

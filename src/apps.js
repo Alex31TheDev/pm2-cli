@@ -2,12 +2,10 @@
 
 const { pm2StartAsync } = require("./pm2async.js");
 
-const config = require("./ecosystem.config.js");
-
-async function startApps() {
+async function startApps(ecosystem) {
     let numStarted = 0;
 
-    for (const app of config.apps) {
+    for (const app of ecosystem.apps) {
         let proc;
 
         try {
