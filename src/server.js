@@ -22,7 +22,9 @@ function startServer(config, handler) {
     try {
         wsServer = new WebSocket.Server({ port, host });
     } catch (err) {
-        console.error("Error starting websocket server:", err);
+        console.error("ERROR: Occured while starting websocket server:");
+        console.error(err);
+
         process.exit(1);
     }
 
@@ -30,7 +32,8 @@ function startServer(config, handler) {
         ws.on("message", message => handler(ws, message));
 
         ws.on("error", err => {
-            console.error("Error occured with WebSocket connection:", err);
+            console.error("ERROR: Occured with WebSocket connection:", err);
+            console.error(err);
         });
 
         ws.on("close", () => console.log("WebSocket client disconnected."));

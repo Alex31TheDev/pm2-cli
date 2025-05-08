@@ -11,7 +11,8 @@ async function startApps(ecosystem) {
         try {
             proc = await pm2StartAsync(app);
         } catch (err) {
-            console.error(`Error starting ${app.name}:`, err);
+            console.error(`ERROR: Occured while starting ${app.name}:`);
+            console.error(err);
         }
 
         if (typeof proc !== "undefined") {

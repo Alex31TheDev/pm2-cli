@@ -27,7 +27,7 @@ async function handler(line) {
                     await pm2StartAsync(name);
                     console.log(`Process "${name}" started successfully.`);
                 } catch (err) {
-                    console.error("Error starting process:", err.message);
+                    console.error("RROR: Occured while starting process:", err.message);
                 }
             }
 
@@ -41,7 +41,7 @@ async function handler(line) {
                     await pm2StopAsync(name);
                     console.log(`Process "${name}" stopped successfully.`);
                 } catch (err) {
-                    console.error("Error stopping process:", err.message);
+                    console.error("ERROR: Occured while stopping process:", err.message);
                 }
             }
 
@@ -55,7 +55,7 @@ async function handler(line) {
                     await pm2RestartAsync(name);
                     console.log(`Process "${name}" restarted successfully.`);
                 } catch (err) {
-                    console.error("Error restarting process:", err.message);
+                    console.error("ERROR: Occured while restarting process:", err.message);
                 }
             }
 
@@ -69,7 +69,7 @@ async function handler(line) {
                     await pm2DeleteAsync(name);
                     console.log(`Process "${name}" deleted successfully.`);
                 } catch (err) {
-                    console.error("Error deleting process:", err.message);
+                    console.error("ERROR: Occured while deleting process:", err.message);
                 }
             }
 
@@ -81,7 +81,8 @@ async function handler(line) {
             try {
                 list = await pm2ListAsync();
             } catch (err) {
-                console.error("Error fetching process list:", err);
+                console.error("ERROR: Occured while fetching process list:");
+                console.error(err);
             }
 
             if (typeof list !== "undefined") {
@@ -136,7 +137,9 @@ async function streamLogs(name = "all") {
     try {
         bus = await pm2LaunchBusAsync();
     } catch (err) {
-        console.error("Error launching PM2 log bus:", err);
+        console.error("ERROR: Occured while launching PM2 log bus:");
+        console.error(err);
+
         return false;
     }
 

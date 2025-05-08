@@ -16,7 +16,9 @@ class PM2Client {
 
         this._ws = null;
 
-        this._destroyed = false;
+        this.connected = false;
+        this.destroyed = false;
+
         this._reconnecting = false;
         this._reconnectAttempts = 0;
 
@@ -28,7 +30,7 @@ class PM2Client {
 
     connect() {
         const promise = new Promise((resolve, reject) => {
-            if (this._destroyed) {
+            if (this.destroyed) {
                 return reject(new Error("Client destroyed"));
             } else if (this._ws !== null) this._cleanupSocket();
 
@@ -41,22 +43,26 @@ class PM2Client {
             };
 
             this._ws.on("open", () => {
+                this.connected = true;
                 cleanup(true);
+
                 resolve();
             });
 
-            this._ws.on("close", () => this._handleClose());
             this._ws.on("message", raw => this._handleMessage(raw));
 
             this._ws.on("error", err => {
                 cleanup(false);
-                this._cleanupSocket();
-
-                if (this.autoReconnect && !this._destroyed) {
-                    this._scheduleReconnect();
-                }
+                this._handleClose();
 
                 reject(err);
+            });
+
+            this._ws.on("close", () => {
+                cleanup(false);
+                this._handleClose();
+
+                reject(new Error("Connection failed"));
             });
         });
 
@@ -65,13 +71,13 @@ class PM2Client {
     }
 
     async sendCommand(action, name) {
-        if (this._destroyed) {
+        if (this.destroyed) {
             throw new Error("Client destroyed");
         }
 
         await this._ready;
 
-        if (this._destroyed) {
+        if (this.destroyed) {
             throw new Error("Client destroyed");
         }
 
@@ -95,35 +101,24 @@ class PM2Client {
         return this.sendCommand("list");
     }
 
-    destroy() {
-        this._destroyed = true;
-        this.autoReconnect = false;
-
-        this._rejectCallbacks();
-        this._cleanupSocket();
-    }
-
     disconnect() {
         this.autoReconnect = false;
+        this._handleClose();
+    }
 
-        this._rejectCallbacks();
-        this._cleanupSocket();
+    destroy() {
+        this.destroyed = true;
+        this._handleClose();
     }
 
     _scheduleReconnect() {
-        if (this._reconnecting || this._destroyed) {
-            return;
-        }
-
-        this._reconnectAttempts++;
-
-        if (this._reconnectAttempts > this.maxRetries) {
-            return;
-        }
+        if (this._reconnecting || this.destroyed) return;
+        if (++this._reconnectAttempts > this.maxRetries) return;
 
         setTimeout(() => {
             this.connect().catch(err => {
-                console.error("Reconnecting failed:", err);
+                console.error("ERROR: Reconnecting failed:");
+                console.error(err);
             });
         }, this.reconnectTimeout);
     }
@@ -172,7 +167,7 @@ class PM2Client {
 
     _attemptSend(command, retries) {
         return new Promise((resolve, reject) => {
-            if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+            if (!this.connected) {
                 const notOpenErr = new Error("Connection not open");
                 return this._handleSendError(notOpenErr, command, retries).then(resolve, reject);
             }
@@ -180,18 +175,14 @@ class PM2Client {
             this._ws.send(JSON.stringify(command), err => {
                 if (err) {
                     this._handleSendError(err, command, retries).then(resolve, reject);
-                } else {
-                    resolve();
-                }
+                } else resolve();
             });
         });
     }
 
     async _handleSendError(err, command, retries) {
-        if (retries < this.maxRetries && !this._destroyed) {
-            if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
-                await this.connect();
-            }
+        if (retries < this.maxRetries && !this.destroyed) {
+            if (!this.connected) await this.connect();
 
             command = this._createCommand(command.action, command.name);
             return this._attemptSend(command, retries + 1);
@@ -209,7 +200,8 @@ class PM2Client {
                 cb(res);
             }
         } catch (err) {
-            console.error("Failed to parse message:", err);
+            console.error("ERROR: Failed to parse message:");
+            console.error(err);
         }
     }
 
@@ -225,10 +217,12 @@ class PM2Client {
     }
 
     _handleClose() {
+        this.connected = false;
+
         this._rejectCallbacks();
         this._cleanupSocket();
 
-        if (this.autoReconnect && !this._destroyed) {
+        if (this.autoReconnect) {
             this._scheduleReconnect();
         }
     }
@@ -236,8 +230,9 @@ class PM2Client {
     _cleanupSocket() {
         if (this._ws === null) return;
 
-        this._ws.removeAllListeners();
+        this.connected = false;
 
+        this._ws.removeAllListeners();
         this._ws.close();
         this._ws = null;
     }

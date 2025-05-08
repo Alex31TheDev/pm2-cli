@@ -34,7 +34,9 @@ async function connect(config) {
         await pm2ConnectAsync(...args);
         cli_state.connected = true;
     } catch (err) {
-        console.error("Error connecting to PM2:", err);
+        console.error("ERROR: Occured while connecting to PM2:");
+        console.error(err);
+
         process.exit(1);
     }
 }
@@ -48,7 +50,9 @@ async function disconnect() {
         await pm2DisconnectAsync();
         cli_state.connected = false;
     } catch (err) {
-        console.error("Error disconnecting from PM2:", err);
+        console.error("ERROR: Occured while disconnecting from PM2:");
+        console.error(err);
+
         process.exit(1);
     }
 
